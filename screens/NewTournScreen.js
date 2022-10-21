@@ -23,9 +23,7 @@ const NewTournScreen = (props) => {
     const [selectedImpVal,setImpValue] = useState(Importancy[0]);
     
     const [textInput, onChangeText] = React.useState("");
-
-    const [textInput2, onChangeText2] = React.useState("");
-
+    
     const [selectedValue,setSelValue] = useState();
 
     const [isValidated,setValid] = useState(false);
@@ -33,44 +31,44 @@ const NewTournScreen = (props) => {
     useEffect(()=>{    
         const getUsers = async () => {
             try{
+        console.log('Getting users..')
         const q = query(usersCollectionRef, orderBy("Rank"));
         const data = await getDocs(q);
         setUsers(data.docs.map((doc) => ({...doc.data()} )));    
-   console.log('yahoo');
-    
             } catch (err) {
                 console.error(err.message);
             } 
     };
         getUsers();
-              
+            
     },[]);    
 
-useEffect(()=>{    
-    if (users.length !== 0) {
-        console.log('Users Array have been set. Can be used now');     
-        setSelValue(users[0].Name);
+    useEffect(()=>{    
+        console.log('Setting Player Value by default..')
+        if (users.length !== 0) {
+            console.log('Users Array have been set. Can be used now');     
+            setSelValue(users[0].Name);
+            
 
-    }
+        }
+    },[users]);  
     
-},[users]);  
-    
 
-const addPlayer= () => {
-        
-    if (!Playerslist.includes(selectedValue) )  {        
-            setPlayer([...Playerslist,selectedValue]);        
-    }
-    else {
-        Alert.alert('oops',selectedValue +' is already in list');
-    }
-        
-} 
+    const addPlayer= () => {
+    console.log('adding new Player to the list...')            
+        if (!Playerslist.includes(selectedValue) )  {        
+                setPlayer([...Playerslist,selectedValue]);        
+        }
+        else {
+            Alert.alert('oops',selectedValue +' is already in list');
+        }
+            
+    } 
 
-const remPlayer= (item) =>{
-    const newPeople = Playerslist.filter((person) => person !== item);
-    setPlayer(newPeople);
-}
+    const remPlayer= (item) =>{
+        const newPeople = Playerslist.filter((person) => person !== item);
+        setPlayer(newPeople);
+    }
 
 useEffect(()=>{
     const inputvalidate = () => {
@@ -168,56 +166,54 @@ const ContentThatGoesAboveTheFlatList = () =>(
     </View>
 );
 
-const ContentThatGoesBelowTheFlatList = () => (
-    <View>
-       <Text style={Styles.TitleStyle}> Choose Importancy</Text>
+ const ContentThatGoesBelowTheFlatList = () => (
+    
 
-<Picker 
-    selectedValue={selectedImpVal}
-    onValueChange={(Item)=>(setImpValue(Item))}> 
-    {Importancy.map((items,idx)=>(
-        <Picker.Item 
-        key={idx}
-        label={items}
-        value={items}/>
-        ))}
-    </Picker>
+<View>
+    <Text style={Styles.TitleStyle}> Choose Importancy</Text>
 <SafeAreaView>
-<TextInput
-style={Styles.input}
-placeholder='Enter Name oF the Tournament'
-onChangeText={onChangeText}
-value={textInput}
-/>
-<TextInput
-placeholder="Entersmth"
-onChangeText={onChangeText2}
-value={textInput2}
-/>
-</SafeAreaView>
+<Picker 
+ selectedValue={selectedImpVal}
+ onValueChange={(Item)=>(setImpValue(Item))}> 
+ {Importancy.map((items,idx)=>(
+     <Picker.Item 
+     key={idx}
+     label={items}
+     value={items}/>
+     ))}
+ </Picker>
 
-<TouchableOpacity style={Styles.Button} disabled={isValidated ? false : true } onPress= {createTournament} >
-        <Text style={Styles.AddRemBtnStyle}> Start Tournament</Text>
-        </TouchableOpacity>    
+ <TouchableOpacity style={Styles.Button} disabled={isValidated ? false : true } onPress= {createTournament} >
+     <Text style={Styles.AddRemBtnStyle}> Start Tournament</Text>
+     </TouchableOpacity>
 
-    </View>
+ </SafeAreaView>
+    
+
+ </View>
 
 );
 
     return  (
         <View style={Styles.container}> 
             <SafeAreaView style={{ flex: 1 }}>
+                  
+            <TextInput
+style={Styles.input}
+placeholder='Enter Name oF the Tournament'
+onChangeText={onChangeText}
+value={textInput}
+/>
+
            
-           
-            <FlatList style={Styles.FlatListStyle}
+           <FlatList
+            // {/* <FlatList style={Styles.FlatListStyle} */}
             data={Playerslist}
             ListHeaderComponent={ContentThatGoesAboveTheFlatList}
             ListFooterComponent={ContentThatGoesBelowTheFlatList}
             renderItem={renderItem}
             keyExtractor={item=>item}/>
-            
-            
-
+          
 
             </SafeAreaView>
 
@@ -250,8 +246,8 @@ const Styles = StyleSheet.create(
             alignItems: "center",
             backgroundColor: "#DDDDDD",
             padding: 10,
-         //   height: 20,
-            marginLeft:5,
+            //height: 50,
+            margin:5,
             borderRadius:5
           },
         AddRemBtnStyle:{

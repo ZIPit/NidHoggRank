@@ -4,6 +4,7 @@ import {db} from "../firebase";
 import {collection , getDocs, query,orderBy, limit, updateDoc} from "@firebase/firestore";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
+
 const Tres=({route,navigation})=>
 {
 // const players = route.params.arrPlayers;
@@ -157,24 +158,43 @@ function compare( a, b ) {
 
 
 const renderItem = ({item}) => (   
-    <View  style={Styles.TextStyle}>
-       <Text> {item.player} {item.win_count} {item.los_count} {item.flw_count} {item.profitdelta} </Text>
+    <View  style={[{flexDirection:'row', borderWidth:1,borderRadius:5}]}>
+       <Text style={[Styles.GridText,{flex:1 }]}> {item.place} </Text>
+       <Text style={[Styles.GridText,{flex:2 }]}> {item.player} </Text>
+       <Text style={[Styles.GridText,{flex:1 }]}> {item.win_count}</Text>
+       <Text style={[Styles.GridText,{flex:1 }]}> {item.los_count} </Text>
+       <Text style={[Styles.GridText,{flex:1 }]}> {item.flw_count} </Text>
+       <Text style={[Styles.GridText,{flex:1 }]}> {item.profitdelta} </Text>
     </View>
 );   
 
+
+const createTwoButtonAlert = () =>
+Alert.alert(
+  "Confirm pls",
+  "Are you sure?",
+  [
+    {
+      text: "Cancel",
+      onPress: () => console.log("Cancel Pressed"),
+      style: "cancel"
+    },
+    { text: "OK", onPress: () => {
+        console.log('hey');
+        submitChanges();
+    } }
+  ]
+);
 
 
 
 const submitChanges = async ()=> {
     const tournRef = doc(db,'Tournaments',TName);
-
     
-
 
     try {
-
     
-
+    
     users.forEach((item)=>{
         const PlayerRef = doc(db,"Players",item.Name);
         const res2 =  updateDoc(PlayerRef, {
@@ -190,13 +210,18 @@ const submitChanges = async ()=> {
         StatusName: 'Completed',
         Results: resultArr
     });
+
+    
+   
+
+
     
     } catch (err) {
         console.error('outer', err.message);
                 throw err;
     } finally{
         
-        Alert.alert('OK', 'Ranking Changes to be applied now');
+        Alert.alert('Done', 'Ranking Changes have hae been applied');
         navigation.navigate('Ranking');
     }
     
@@ -206,11 +231,24 @@ const submitChanges = async ()=> {
   
  return (
    
-<View>
-<Text> Result screen</Text>
+<View style={Styles.Container}>
+<Text style={Styles.GridRow}> Result screen</Text>
 <Text> Tournament name: {TName}</Text>
 <Text> Tournament satus: {status===0?("Active"):("Completed")}</Text>
-    <SafeAreaView >                            
+    
+<View style={[{flexDirection: 'row', borderWidth: 1, borderRadius:5}]}>           
+        
+           
+           <Text style={[Styles.TitleGrid,{flex:1}]}> Place </Text>
+           <Text style={[Styles.TitleGrid,{flex:2}]}> Player </Text>
+           <Text style={[Styles.TitleGrid,{flex:1}]}> Wins</Text>
+           <Text style={[Styles.TitleGrid,{flex:1}]}> Loses</Text>
+           <Text style={[Styles.TitleGrid,{flex:1}]}> Flawless</Text>
+           <Text style={[Styles.TitleGrid,{flex:1}]}> Profit Delta</Text>
+        
+        </View>
+
+    <SafeAreaView style={Styles.FrameBorder}>                            
             <FlatList 
             data={resultArr}            
             renderItem={renderItem}
@@ -219,31 +257,78 @@ const submitChanges = async ()=> {
             />                                         
     </SafeAreaView>
 
-    <TouchableOpacity style={Styles.btn2Style} onPress={status===0?(submitChanges):(()=>navigation.goBack())} >
-           <Text > {status===0?('Submit Tournament & Ranking changes'):('Daxi Kala')} </Text>
+    <TouchableOpacity style={Styles.btn2Style} onPress={status===0?(createTwoButtonAlert):(()=>navigation.goBack())} >
+           <Text style={{fontWeight:'bold', color:'black'}}> {status===0?('Submit Tournament changes'):('Daxi Kala')} </Text>
     
     </TouchableOpacity>
 
-    
+        
+
 
 </View>
 );
 }
 const Styles = StyleSheet.create({
+    Container:{
+        flex: 1,
+        padding: 20,
+        borderWidth: 5,
+        backgroundColor:"oldlace"
+    
+        },
+        GridText:{
+            color: 'black',
+            fontSize: 14,
+            backgroundColor:'aliceblue',
+            textAlign:'left'
+        },
+        TitleGrid:{
+            color: 'black',
+            fontSize: 14,
+            textAlign:'left',
+            fontWeight:'bold',
+            backgroundColor:'powderblue'
+        },
+        
+          FrameBorder: {
+            borderColor:'grey', 
+            borderRadius:5, 
+            backgroundColor:'powderblue',
+            borderWidth:2
+        },
+        SubFrameBorder: {
+            borderWidth:2, 
+            borderColor:'grey', 
+            margin:5, 
+            backgroundColor:'aliceblue',
+            borderRadius:5
+        },
+        GridRow:{
+            fontSize:14,
+            color: 'green',
+            borderBottomWidth:1,
+            borderColor:'grey',
+            textAlign:'center'
+    },
+    
     TextStyle: {
         color:"red"
     },
-
+    
     btn2Style: {
         alignItems: 'center',
+        padding:20,
         justifyContent: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 10,
+        // paddingVertical: 10,
+        // paddingHorizontal: 10,
         borderRadius: 10,
         elevation: 5,
         marginTop:30,
-        marginHorizontal:50   
+        backgroundColor:'powderblue',
+        marginHorizontal:50,
+        borderWidth:1,          
       },  
 });
 
 export default Tres;
+

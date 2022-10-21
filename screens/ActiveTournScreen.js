@@ -32,8 +32,9 @@ const Atourn = ({route, navigation}) => {
  
     const usersCollectionRef = collection(db,"Players");
 
+  //  let arrPlayers = [];
     const [arrPlayers, setArrPl]= useState([]);
-    const [Coeff, setCoeff] = useState(0.0)
+    // const [Coeff, setCoeff] = useState(0.0)
 
 
     const [Pl1_selected,setPl1] = useState();
@@ -42,7 +43,9 @@ const Atourn = ({route, navigation}) => {
     const [isChecked, setChecked] = useState(false);
 
     const [matches, setMatches] = useState([]);
-    const [MatchNo,setNewMatch] = useState(0);
+    let [MatchNo,setNewMatch] = useState(0);
+    let [Coeff,setCoeff] = useState(0);
+    //let MatchNo=0;
     let [lastMatchData, getLastMatchNum] = useState([]);
    
 
@@ -50,17 +53,15 @@ const Atourn = ({route, navigation}) => {
     const [users, setUsers] = useState([]);
 
 
-
-
-
-    
     useEffect (()=> {
     // Getting data about Tournament Participants from the FB DB    
     const getTournData = async () => {
         const docSnap = await getDoc(docRef);
         let arr = docSnap.data().Participants;
         const b = docSnap.data().Coeff;
-        setArrPl(arr);
+         setArrPl(arr);
+       // arrPlayers=arr;
+        //Coeff=b;
         setCoeff(b);
         console.log(arrPlayers[0], arrPlayers[1],'test3');
         setPl1(arr[0]);
@@ -85,52 +86,35 @@ const Atourn = ({route, navigation}) => {
     const getMatchNum = async () => {
         const q = query(tournRef, orderBy("MatchNo","desc"), limit(1));        
         const data = await getDocs(q);
-        getLastMatchNum(data.docs.map((doc) => ({...doc.data()})));  
-
-       
-        // if (lastMatchData.length!=0) {    
-        //     console.log('LastMatchFound:',lastMatchData[0].MatchNo);
+       // getLastMatchNum(data.docs.map((doc) => ({...doc.data()})));         
+        lastMatchData=data.docs.map((doc) => ({...doc.data()}));
+        if (lastMatchData.length!=0) {    
+            console.log('LastMatchFound:',lastMatchData[0].MatchNo);
             
-        //         setNewMatch(lastMatchData[0].MatchNo+1);
-        //     }
-        //   else {console.log('No Matches'); setNewMatch(1)};
+                setNewMatch(lastMatchData[0].MatchNo+1);
+              //  MatchNo=(lastMatchData[0].MatchNo)+1;                
+            }
+          else {console.log('No Matches'); setNewMatch(1)};
         };
 
     getTournData();   
     getUsers();
     getMatchStats();
     getMatchNum();
+   
     },[TName]);
 
-   
-  
-    useEffect(()=>{
-        const setNewMatchNum = () => {
-                if (lastMatchData.length!=0) {    
-                    console.log('LastMatchFound:',lastMatchData[0].MatchNo);
-                    
-                        setNewMatch(lastMatchData[0].MatchNo+1);
-                    }
-                    else {console.log('No Matches'); setNewMatch(1)}
-    
-            }
-        setNewMatchNum();
-    
-        },[lastMatchData]);
-
-
-
        
-        useEffect(()=>{
-            // Getting Matches list
-        const getMatchStats = async () => {
-        const q = query(tournRef, orderBy("MatchNo"));        
-        const data = await getDocs(q);
-        setMatches(data.docs.map((doc) => ({...doc.data()})));       
-        };
-        getMatchStats();
+    useEffect(()=>{
+        // Getting Matches list
+    const getMatchStats = async () => {
+    const q = query(tournRef, orderBy("MatchNo"));        
+    const data = await getDocs(q);
+    setMatches(data.docs.map((doc) => ({...doc.data()})));       
+    };
+    getMatchStats();
 
-        },[MatchNo]);
+    },[MatchNo]);
 
 
     function getUsrRating(Item) {
@@ -145,12 +129,17 @@ const Atourn = ({route, navigation}) => {
     };
     
 
-    function calcProfit(winner,loser, koeff) {
+    function calcProfit(winner,loser, koeff,isChecked) {
         let Profit;
         let wScore = getUsrRating(winner);
         let lScore = getUsrRating(loser);
+        let MatchCoeff;
+        if (isChecked) {
+            MatchCoeff = 1.1;
+        }
+        else MatchCoeff=1;
         
-        return Math.abs( Math.round((((100 - (wScore-lScore))/10 )*koeff + Number.EPSILON)*100 )/100);
+        return Math.abs( Math.round((((100 - (wScore-lScore))/10 )*koeff*MatchCoeff + Number.EPSILON)*100 )/100);
     }
     
  
@@ -178,7 +167,7 @@ const Atourn = ({route, navigation}) => {
         let datetime = new Date();
         if (Win_selected==Pl1_selected) {lsr= Pl2_selected}
         else {lsr = Pl1_selected}       
-        let Profit = calcProfit(Win_selected,lsr,Coeff);
+        let Profit = calcProfit(Win_selected,lsr,Coeff,isChecked);
         console.log('submitMatches Log', MatchNo, TName,Coeff,Pl1_selected,Pl1_selected,Win_selected,lsr,Profit,isChecked);
          await setDoc(doc(tournRef,MatchNo+Pl1_selected+Pl2_selected),{
                  Date: today,
@@ -200,68 +189,25 @@ const Atourn = ({route, navigation}) => {
                 throw err;
 
             } finally {
-                setNewMatch(MatchNo+1);          
-
+                  setNewMatch(MatchNo+1);          
+                 //MatchNo = MatchNo+1;
                 console.log ('sub Collection has been added',MatchNo);
             }
 
-            Alert.alert('Done', " Completed");
+            // Alert.alert('Done', " Completed");
 
      }
-
-
-
-
-
-
-   
-
-    // useEffect(()=>{
-
-    //     try {
-    //     const getMatchNum = async () => {
-    //     const q = query(tournRef, orderBy("MatchNo","desc"), limit(1));        
-    //     const data = await getDocs(q);
-    //     getLastMatchNum(data.docs.map((doc) => ({...doc.data()})));     
-        
-
-    //     };
-    //     getMatchNum();
-    // } catch (err) {
-    //     console.error('outer', err.message);
-    //     throw err;
-
-    // }
-
-
-    // },[TName]);
-
-    // useEffect(()=>{
-    // const setNewMatchNum = () => {
-
-    //         if (lastMatchData.length!=0) {    
-    //             console.log('LastMatchFound:',lastMatchData[0].MatchNo);
-                
-    //                 setNewMatch(lastMatchData[0].MatchNo+1);
-    //             }
-    //             else {console.log('No Matches'); setNewMatch(1)}
-
-    //     }
-    // setNewMatchNum();
-
-    // },[getLastMatchNum]);
-
     
 
     const renderItem = ({item}) => (   
-            <View  style={Styles.TextStyle}>
+            <View  style={Styles.SubFrameBorder}>
                <Text> {item.MatchNo} {item.Player1} {item.Player2}  </Text>
                <Text>Winner: {item.Winner} Winner Profit: {item.WinnerProfit} </Text>                  
             </View>
         );   
     const ContentThatGoesAboveTheFlatList = () =>(
         <View>
-            <Text style={Styles.TextStyle}>This is an active Tournament Board Screen</Text>            
+            <Text style={Styles.GridRow}>This is an active Tournament Board Screen</Text>            
             <View
                 style={{
                     flexDirection: "row",
@@ -337,7 +283,7 @@ const Atourn = ({route, navigation}) => {
 
             <View>
                 <Button title='Submit Match Result' onPress={SumbitMatchRes}> </Button>
-                <Text> Played Matches </Text>
+                <Text style={Styles.GridRow}> Played Matches </Text>
 
             
             </View>  
@@ -353,8 +299,8 @@ const Atourn = ({route, navigation}) => {
     );
 
     return ( 
-        <View>
-         <SafeAreaView >                            
+        <View style={Styles.Container}>
+         <SafeAreaView style={Styles.FrameBorder} >                            
             <FlatList 
             data={matches}
             ListHeaderComponent={ContentThatGoesAboveTheFlatList}
@@ -372,15 +318,44 @@ const Atourn = ({route, navigation}) => {
 
 const Styles = StyleSheet.create(
     {
-        TextStyle:{
-            fontSize: 16,
-            color: 'red'
-
+        
+        Container:{
+        flex: 1,
+        padding: 20,
+        borderWidth: 5,
+        backgroundColor:"oldlace"
+    
         },
-        checkbox: {
-            margin: 8,
-          }
-    }
+        
+          FrameBorder: {
+            borderColor:'grey', 
+            borderRadius:5, 
+            backgroundColor:'powderblue',
+            borderWidth:2
+        },
+        SubFrameBorder: {
+            borderWidth:2, 
+            borderColor:'grey', 
+            margin:5, 
+            backgroundColor:'aliceblue',
+            borderRadius:5
+        },
+        GridRow:{
+            fontSize:14,
+            color: 'green',
+            borderBottomWidth:1,
+            borderColor:'grey',
+            textAlign:'center'
+    },
+    TextStyle:{
+        fontSize: 16,
+        color: 'red'
+
+    },
+    checkbox: {
+        margin: 8,
+      }
+}
 
 )
 
