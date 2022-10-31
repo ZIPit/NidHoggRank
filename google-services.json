@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "336679069459",
+    "project_id": "fir-hogg",
+    "storage_bucket": "fir-hogg.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:336679069459:android:3e76fc6d9497d4cce31ce6",
+        "android_client_info": {
+          "package_name": "niddhoggrankingpointcode.nhoggapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "336679069459-epbss2508uguiicmdsrt75n4olffialb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "niddhoggrankingpointcode.nhoggapp",
+            "certificate_hash": "1e82390bb08bd94da0286287e440f269d1a90112"
+          }
+        },
+        {
+          "client_id": "336679069459-lpnqkn415r3om0cbnem7dfrkmjvqd2m3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "niddhoggrankingpointcode.nhoggapp",
+            "certificate_hash": "a1c424ba651aac4ba82d2c07109d6b58e15b2b2a"
+          }
+        },
+        {
+          "client_id": "336679069459-iomet9b1jg5gfklabbaev3f3j383797m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcZy6ZcgqKNOZtpjI6F9sbjQGaBy-7c00"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "336679069459-iomet9b1jg5gfklabbaev3f3j383797m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

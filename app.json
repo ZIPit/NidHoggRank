@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "NHogg Rank",
-    "slug": "NHoggRank",
+    "slug": "NHoggRank",   
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,7 +11,8 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/955d246f-6532-4d2f-972e-49fb3d06d636"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -21,6 +22,7 @@
       "bundleIdentifier": "niddhoggrankingpointcode.nhoggapp"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "package": "niddhoggrankingpointcode.nhoggapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -29,6 +31,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "955d246f-6532-4d2f-972e-49fb3d06d636"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }

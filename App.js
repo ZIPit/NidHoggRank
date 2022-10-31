@@ -9,9 +9,11 @@ import TournScreen from './screens/TournScreen';
 import NewTournScreen from './screens/NewTournScreen';
 import ActiveTournScreen from './screens/ActiveTournScreen';
 import TournResultScreen from './screens/TournResultScreen';
+import LoginScreen from './screens/LoginScreen';
 import { LogBox, Button, Text } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
+import 'expo-dev-client';
 
 
 const Stack = createStackNavigator();
@@ -25,8 +27,10 @@ function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen}/> 
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen}
+          options={{headerShown: false}}/>
+        <Stack.Screen name="Home" component={HomeScreen}/>         
         <Stack.Screen name="Ranking" component={RankingScreen} options={(props)=>({
           // Add a placeholder button without the `onPress` to avoid flicker
           headerLeft: () => 

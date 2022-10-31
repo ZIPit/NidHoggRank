@@ -3,8 +3,7 @@ import { Text, StyleSheet, View, Button } from "react-native";
 import Pressable from "react-native/Libraries/Components/Pressable/Pressable";
 import { LinearGradient } from "expo-linear-gradient";
 
-const HomeScreen = (props) => {    
-    console.log(props);
+const HomeScreen = (props) => {      
 return <View style={styles.container}>
         <Text style={styles.titleStyle} > Welcome to Hogg World</Text>
         <Pressable  style={styles.btn2Style} onPress={ () => props.navigation.navigate('Ranking') }>
