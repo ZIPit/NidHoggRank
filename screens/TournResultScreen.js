@@ -1,8 +1,6 @@
 import React, {useState,useEffect }  from "react";
 import {Text, StyleSheet, View, SafeAreaView, FlatList, Button, Alert, TouchableOpacity} from "react-native";
-import {db} from "../firebase";
-import {collection , getDocs, query,orderBy, limit, updateDoc} from "@firebase/firestore";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import firestore from '@react-native-firebase/firestore';
 
 
 const Tres=({route,navigation})=>
@@ -13,13 +11,17 @@ const TName = route.params.TName;
 //console.log(route.params.arrPlayers);
 
 const textInput=TName; 
-const usersCollectionRef = collection(db,"Players");
+
+//const usersCollectionRef = collection(db,"Players");
+
 const [users, setUsers] = useState([]);
+
+
 
 //-----------
 
-const tournRef = collection(db,"Tournaments/"+TName+"/Matches");
-const docRef = doc(db, "Tournaments", TName);
+//const tournRef = collection(db,"Tournaments/"+TName+"/Matches");
+//const docRef = doc(db, "Tournaments", TName);
 const [players, setArrPl]= useState([]);
 const [Coeff, setCoeff] = useState(0.0);
 const [status, setStatus] = useState(0)
@@ -29,8 +31,8 @@ const [matches, setMatches] = useState([]);
  useEffect (()=> {
     const getTournData = async () => {
  
-    
-    const docSnap = await getDoc(docRef);
+    const docSnap = await firestore().collection('Tournaments').doc(TName).get()
+    //const docSnap = await getDoc(docRef);
     let arr = docSnap.data().Participants;
     const b = docSnap.data().Coeff;
     const statusTmp = docSnap.data().Status;
@@ -47,8 +49,10 @@ const [matches, setMatches] = useState([]);
 
 useEffect(()=>{
     const getMatchStats = async () => {
-    const q = query(tournRef, orderBy("MatchNo"));        
-    const data = await getDocs(q);
+    
+    const data = await firestore().collection("Tournaments/"+TName+"/Matches").orderBy('MatchNo','asc').get();   
+    // const q = query(tournRef, orderBy("MatchNo"));        
+    // const data = await getDocs(q);
     setMatches(data.docs.map((doc) => ({...doc.data()})));       
     };
     getMatchStats();
@@ -63,9 +67,10 @@ useEffect(()=>{
 
 useEffect(()=>{
     const getUsers = async () => {
-    const q = query(usersCollectionRef, orderBy("Rank"));
-    //const q = query(usersCollectionRef,orderBy("Rank"));
-    const data = await getDocs(q);
+
+    const data = await firestore().collection("Players").orderBy('Rank','asc').get();          
+    // const q = query(usersCollectionRef, orderBy("Rank"));
+    // const data = await getDocs(q);
     setUsers(data.docs.map((doc) => ({...doc.data(), id: doc.id})));    
     };
     getUsers();
@@ -189,27 +194,56 @@ Alert.alert(
 
 
 const submitChanges = async ()=> {
-    const tournRef = doc(db,'Tournaments',TName);
+//    const tournRef = doc(db,'Tournaments',TName);
     
 
     try {
     
     
     users.forEach((item)=>{
-        const PlayerRef = doc(db,"Players",item.Name);
-        const res2 =  updateDoc(PlayerRef, {
+        // const PlayerRef = doc(db,"Players",item.Name);
+        // const res2 =  updateDoc(PlayerRef, {
+        //     "Rank": item.Rank,
+        //     "Score": item.Score,
+        //     "LastChange": item.LastChange        
+        
+        // });
+
+
+        firestore()
+        .collection('Players')
+        .doc(item.Name)
+        .update({
             "Rank": item.Rank,
             "Score": item.Score,
             "LastChange": item.LastChange
+        })
+        .then(() => {
+            console.log('Player updated!');
         });
+
+   
 
     })
 
-    const res = await updateDoc(tournRef,{
+    // const res = await updateDoc(tournRef,{
+    //     Status: 1,
+    //     StatusName: 'Completed',
+    //     Results: resultArr
+    // });
+
+    firestore()
+    .collection('Tournaments')
+    .doc(TName)
+    .update({
         Status: 1,
         StatusName: 'Completed',
         Results: resultArr
+    })
+    .then(() => {
+        console.log('Tournament marked as Completed!');
     });
+
 
     
    

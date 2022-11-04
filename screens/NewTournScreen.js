@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {FlatList, TouchableOpacity, TextInput, Alert, Button, StyleSheet, Text, View, StatusBar, ScrollView, SafeAreaView} from "react-native";
 import {Picker} from '@react-native-picker/picker';
-import {db} from "../firebase";
-import {collection , getDocs, query,orderBy, limit} from "@firebase/firestore";
-import { doc, setDoc } from "firebase/firestore";
-
+import firestore from '@react-native-firebase/firestore';
 
 
 
@@ -15,7 +12,7 @@ let imp;
 
 const NewTournScreen = (props) => {
     
-    const usersCollectionRef = collection(db,"Players");
+
 
     const [Playerslist,setPlayer] = useState([]);
     const [users, setUsers] = useState([]);
@@ -32,8 +29,8 @@ const NewTournScreen = (props) => {
         const getUsers = async () => {
             try{
         console.log('Getting users..')
-        const q = query(usersCollectionRef, orderBy("Rank"));
-        const data = await getDocs(q);
+        const data = await firestore().collection("Players").orderBy('Rank','asc').get();   
+
         setUsers(data.docs.map((doc) => ({...doc.data()} )));    
             } catch (err) {
                 console.error(err.message);
@@ -101,22 +98,26 @@ const createTournament = async () => {
             break;
    }
 
-   try {
-   // Add a new document in collection
-  await  setDoc(doc(db, "Tournaments", textInput), {
-    Participants: Playerslist,
-    Name: textInput,
-    Status: 0, 
-    Date: today,
-    Coeff: imp,
-    Importancy: selectedImpVal ,
-    StatusName: 'Active'
-  });
-   } catch (err) {
-       console.error(err.message);
-   } finally {
-       console.log('New Doc has been Added');
-   };
+   //try {
+
+    // Add a new document in collection
+    firestore()
+    .collection('Tournaments')
+    .doc(textInput)
+    .set({
+        Participants: Playerslist,
+        Name: textInput,
+        Status: 0, 
+        Date: today,
+        Coeff: imp,
+        Importancy: selectedImpVal ,
+        StatusName: 'Active'
+    })
+    .then(() => {
+      console.log('Tournament has been added!');
+    });
+
+
   props.navigation.navigate('Atourn',{textInput,imp,Playerslist}); 
    
 }

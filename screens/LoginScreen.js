@@ -1,60 +1,121 @@
-import { Alert, KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View, Button, Image } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { TextInput } from 'react-native-gesture-handler'
-import { auth } from '../firebase';
-import {     
-    createUserWithEmailAndPassword, 
-    sendEmailVerification, 
-    signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import { async } from '@firebase/util';
+import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
+import { useTheme } from 'react-navigation';
 
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+  // Set an initializing state whilst Firebase connects
+  const [initializing, setInitializing] = useState(true);
+  const [user, setUser] = useState();
+  
+
     const navigation = useNavigation();
 
-    useEffect(()=>{
-        const unsubscribe = auth.onAuthStateChanged(user => {
-            if (user) {
-                console.log('auto logged in by the ' , user.email);
-                navigation.navigate("Home");
-            }
-        })
-    },[])
+ // Handle user state changes
+ function onAuthStateChanged(user) {
+    setUser(user);
+    if (initializing) setInitializing(false);
+  }    
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber; // unsubscribe on unmount
+  }, []);
+
+ 
+
+
 
     const handleSignUp = async () => {
-        try{
-        const result = await createUserWithEmailAndPassword(auth,email,password)
-        // const user = await result.user;
-        // console.log('Signed in with ', user.email);
-        const user = await sendEmailVerification(result.user);    
+        auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          console.log('User account created & signed in!');
+        })
+        .catch(error => {
+          if (error.code === 'auth/email-already-in-use') {
+            Alert.alert('That email address is already in use!');
+          }
       
-
-                                        
-        } catch (error){ alert(error.message)};
+          if (error.code === 'auth/invalid-email') {
+            Alert.alert('That email address is invalid!');
+          }
+      
+          console.error(error);
+        });
             
     }
     const handleLogin = () => {
-        signInWithEmailAndPassword(auth,email,password)
-        .then(userCredetials => {
+        auth()
+        .signInWithEmailAndPassword(email,password)
+        .then((userCredetials) => {
             const user = userCredetials.user;                       
-
-            if (user.emailVerified||user.email=='ivzubenko@gmail.com'){
+            // if (user.emailVerified||user.email=='ivzubenko@gmail.com'){
             console.log('Logged In with ',user.email);            
             navigation.navigate("Home");
-            }
-            else {
-                Alert.alert('Check Your Email Please to verify your Account ')              
-            }
-        })
+            })
+        .catch(error=>{ Alert.alert(error.code)});
+    }
     
-        .catch(error => alert(error.message))
+        
 
+    GoogleSignin.configure({
+        webClientId: '336679069459-iomet9b1jg5gfklabbaev3f3j383797m.apps.googleusercontent.com',
+      });
+
+    
+
+
+
+    const onGoogleButtonPress =  async () => {
+        // Check if your device supports Google Play
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+        // Get the users ID token
+        const { idToken } = await GoogleSignin.signIn();
+      
+        // Create a Google credential with the token
+        const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      
+        // Sign-in the user with the credential
+       // return auth().signInWithCredential(googleCredential);
+       const user_sign_in = auth().signInWithCredential(googleCredential);
+       user_sign_in.then((user)=>{
+        console.log(user);
+       })
+       .catch((error)=>{
+            console.log(error);
+       })
+      }
+
+    const signOut = async () => {
+        try {
+            await GoogleSignin.revokeAccess();
+            await auth().signOut();
+        
+        }   catch (error) {
+            console.error(error);
+        }
     }
 
+    const logOut = () =>{
+        auth()
+        .signOut()
+        .then(() => console.log('User signed out!'))
+        .catch((error)=>{ console.error(error)});
+    }
+    
+    if (initializing) return null;
+   
+   
+  if (!user) {
+    console.log(user,'all empty');
   return (
     <KeyboardAvoidingView
     style={styles.container}
@@ -77,6 +138,15 @@ const LoginScreen = () => {
             />
         </View>
         <View style={styles.buttonContainer}>
+            
+            <GoogleSigninButton
+                style={{width:300, height:65, marginTop:10}}
+                onPress={onGoogleButtonPress}
+            
+            />
+
+            
+            
             <TouchableOpacity
                 onPress={handleLogin}
                 style={styles.Button}
@@ -98,19 +168,50 @@ const LoginScreen = () => {
                 <Text style={[styles.buttonText, {color:'grey'}]}>Forgot Password</Text>
 
             </TouchableOpacity>
-            <TouchableOpacity
-                onPress={handleLogin}
-                 style={[[styles.Button,styles.buttonOutline],{borderWidth:0, backgroundColor:'#FAE9EA'}]}
-            >
-                <Text style={[styles.buttonText, {color:'#DD4D44'}]}>Sign in with Google</Text>
-
-            </TouchableOpacity>
+            
            
 
 
         </View>
     </KeyboardAvoidingView>
-  )
+  );
+  }
+  if (user){
+    const t =user.providerData[0];
+    console.log(t.providerId);
+    
+    if (t.providerId=='google.com') {
+    
+    
+        return (
+            
+            <View style={{alignItems:'center'}}>
+                <Text> Welcome {user.displayName} </Text>
+                <Image 
+                    source={{uri: user.photoURL}}
+                    style={{height:80, width: 80, borderRadius:150, marginTop:30, alignItems:'center'}}
+                />
+           
+                <Button onPress={signOut} title='Sign Out'/>
+                <Button onPress={()=>{navigation.navigate("Home")}} title='Go to Home Page'/>                
+            </View>
+        );
+    }
+    else {return (
+                <View>
+                        <Text> Welcome {user.email} </Text>
+                        <Button title='logOut' onPress={logOut}/>
+                    </View>
+                  );
+    }
+  }
+  
+  
+    
+  
+    
+   
+  
 }
 
 export default LoginScreen

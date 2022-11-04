@@ -1,12 +1,11 @@
-import { collection, collectionGroup, getDocs, query,where} from "@firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { FlatList, Text, View,StyleSheet, SafeAreaView } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import {db} from "../firebase";
+import firestore from '@react-native-firebase/firestore';
 
 
 const TournScreen = ({props, navigation}) => {
-    const TournCollectionRef = collection(db,"Tournaments");   
+    
     const [matchess, setMatches] = useState([]);
     const [tourns, setTourn] = useState([]);
     const [actTourns, addActTourn] = useState([]);
@@ -14,10 +13,8 @@ const TournScreen = ({props, navigation}) => {
     
     useEffect ( ()=>{
         const getTourn= async()=>{
-    
-                const q = query(TournCollectionRef);
-                const data = await getDocs(q);
- 
+                
+             const data = await firestore().collection("Tournaments").orderBy('Date','desc').get();     
              setTourn(data.docs.map((doc) => ({...doc.data(),  Tname: doc.id})));               
             }
     
@@ -25,29 +22,7 @@ const TournScreen = ({props, navigation}) => {
    
         },[]
     );
-   
-    
-    let t=[];
-   //t=tourns;
-    tourns.forEach(item=>{
-        if (item.Status==0) {
-            t.push(item);
-   //         addActTourn(prevArray=>({...prevArray,item}));
-        }
-
-     });
-     
-     //console.log(t, 'actTourns value');
-
-//     console.log(actTourns, 'useState');
-    // const activeTourn=tourns.map(item=>{ 
-    //     let t  ;         
-    //     if (item.Status==0) {
-    //         t =item;
-    //     }
-    // return {t}
-    // });
-    // console.log(activeTourn, 'test');
+       
 
     
     const renderItem = ({item}) => {

@@ -1,8 +1,13 @@
 import React, {useState,useEffect } from "react";
 import { FlatList, TouchableOpacity, Text, View, StyleSheet, SafeAreaView, BackHandler, Alert } from "react-native";
-import {db} from "../firebase";
-import {collection , getDocs, query,orderBy, limit} from "@firebase/firestore";
+//import {db} from "../firebase";
+//import {collection , getDocs, query,orderBy, limit} from "@firebase/firestore";
 import Row from '../components/rankingRow';
+import firestore from '@react-native-firebase/firestore';
+
+
+
+
 
 
         
@@ -14,8 +19,10 @@ const Item = ({itemC}) => (
 
 const Ranking = (props) => {
     const [users, setUsers] = useState([]);
-    const usersCollectionRef = collection(db,"Players");
-    
+  //  const usersCollectionRef = collection(db,"Players");
+    const usersCollection = firestore().collection("Players");
+
+    /*
     useEffect(()=>{
         console.log('back button flow has started..');
         const backAction = () => {
@@ -37,20 +44,34 @@ const Ranking = (props) => {
           );
         return () => backHandler.remove();
     },[]);
-    
+    */
 
     useEffect(()=>{
-        
+       
 
         const getUsers = async () => {
-        const q = query(usersCollectionRef, orderBy("Rank"));
-        const data = await getDocs(q);
+        // const q = query(usersCollectionRef, orderBy("Rank"));
+        // const data = await getDocs(q);
+        // setUsers(data.docs.map((doc) => ({...doc.data(), id: doc.id})));    
+        // };
+
+
+        try{
+        const data = await firestore().collection("Players").orderBy('Rank','asc').get();     
+        console.log('test 0 step');
         setUsers(data.docs.map((doc) => ({...doc.data(), id: doc.id})));    
-        };
-        getUsers();
-      
+} catch (error) {console.error(error.code)};
+        
+
+// firestore()
+        // .collection("Players")
+        // .orderBy('Rank','desc')
+        // .get
+
+    };
+    getUsers();
     },[]);
-    console.log(users);
+    console.log(users,'test');
 
     const renderItem = ({item}) => (   
     <TouchableOpacity onPress={()=>{props.navigation.navigate('Player',{item})}} >

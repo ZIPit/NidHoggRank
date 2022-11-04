@@ -1,7 +1,6 @@
-import { collection, collectionGroup, getDocs, query,where} from "@firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView,Text, View,StyleSheet,FlatList } from "react-native";
-import {db} from "../firebase";
+import firestore from '@react-native-firebase/firestore';
 
 
 const PlayerScreen = ({route})=> {
@@ -13,15 +12,14 @@ const PlayerScreen = ({route})=> {
 
             const getMatches = async()=>{
                 
-                const matches = query(collectionGroup(db, 'Matches'), where('Player1', '==', arr.Name));
-                const querySnapshot = await getDocs(matches);                
-                
-                setMatches(querySnapshot.docs.map((doc) => ({...doc.data()})));   
-               
-                const matches2 = query(collectionGroup(db, 'Matches'), where('Player2', '==', arr.Name));
-                const querySnapshot2 = await getDocs(matches2);
+                const querySnapshot = await firestore().collectionGroup("Matches").where('Player1', '==', arr.Name).get();     
+
+
+                setMatches(querySnapshot.docs.map((doc) => ({...doc.data()})));                  
+                const querySnapshot2 = await firestore().collectionGroup("Matches").where('Player2', '==', arr.Name).get();  
+
                  console.log(querySnapshot.docs); 
-                setMatches2(querySnapshot2.docs.map((doc) => ({...doc.data()})));
+                setMatches2(querySnapshot2.docs.map((doc) => ({...doc.data()})));               
             }
     
             getMatches();
@@ -48,7 +46,7 @@ const PlayerScreen = ({route})=> {
    
 
         
-            // console.log({arr});
+             console.log({arr});
         return ( 
              <View style={styles.Container}>   
                 <View style={[styles.FrameBorder, { margin:2, marginBottom:10 }]}>

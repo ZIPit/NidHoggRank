@@ -2,11 +2,8 @@ import React, { useState, useEffect, useLayoutEffect } from "react";
 import {Text, View, StyleSheet, Button, ScrollView, Alert, SafeAreaView, FlatList} from "react-native";
 import {Picker} from '@react-native-picker/picker';
 import Checkbox from "expo-checkbox";
-import {db} from "../firebase";
-import {collection , getDocs, query,orderBy, limit} from "@firebase/firestore";
-import { doc, setDoc, getDoc } from "firebase/firestore";
 import { async } from "@firebase/util";
-
+import firestore from '@react-native-firebase/firestore';
 
 
 
@@ -21,20 +18,16 @@ const Atourn = ({route, navigation}) => {
         TName = route.params.item.Tname;
     }
 
-    console.log(TName,'test');
+    //console.log(TName,'test');
 
     
-
-    const tournRef = collection(db,"Tournaments/"+TName+"/Matches");
-    const docRef = doc(db, "Tournaments", TName);
+  
 
 
  
-    const usersCollectionRef = collection(db,"Players");
-
-  //  let arrPlayers = [];
+   
     const [arrPlayers, setArrPl]= useState([]);
-    // const [Coeff, setCoeff] = useState(0.0)
+   
 
 
     const [Pl1_selected,setPl1] = useState();
@@ -45,7 +38,7 @@ const Atourn = ({route, navigation}) => {
     const [matches, setMatches] = useState([]);
     let [MatchNo,setNewMatch] = useState(0);
     let [Coeff,setCoeff] = useState(0);
-    //let MatchNo=0;
+   
     let [lastMatchData, getLastMatchNum] = useState([]);
    
 
@@ -56,14 +49,15 @@ const Atourn = ({route, navigation}) => {
     useEffect (()=> {
     // Getting data about Tournament Participants from the FB DB    
     const getTournData = async () => {
-        const docSnap = await getDoc(docRef);
+        const docSnap = await firestore().collection('Tournaments').doc(TName).get()
+      //  const docSnap = await getDoc(docRef);
         let arr = docSnap.data().Participants;
         const b = docSnap.data().Coeff;
          setArrPl(arr);
        // arrPlayers=arr;
         //Coeff=b;
         setCoeff(b);
-        console.log(arrPlayers[0], arrPlayers[1],'test3');
+        
         setPl1(arr[0]);
         setPl2(arr[1]);
         setWin(arr[1]);
@@ -71,21 +65,24 @@ const Atourn = ({route, navigation}) => {
     
     // Getting Matches list
     const getMatchStats = async () => {
-        const q = query(tournRef, orderBy("MatchNo"));        
-        const data = await getDocs(q);
+        const data = await firestore().collection("Tournaments/"+TName+"/Matches").orderBy('MatchNo','asc').get();   
+        // const q = query(tournRef, orderBy("MatchNo"));        
+        // const data = await getDocs(q);
         setMatches(data.docs.map((doc) => ({...doc.data()})));       
         };
     
     // -- Getting Ranking Stats
     const getUsers = async () => {
-        const q = query(usersCollectionRef, orderBy("Rank"));        
-        const data = await getDocs(q);
+        const data = await firestore().collection("Players").orderBy('Rank','asc').get();  
+        // const q = query(usersCollectionRef, orderBy("Rank"));        
+        // const data = await getDocs(q);
         setUsers(data.docs.map((doc) => ({...doc.data(), id: doc.id})));    
     };
     // Getting last Match Number and  defining number for the next match
     const getMatchNum = async () => {
-        const q = query(tournRef, orderBy("MatchNo","desc"), limit(1));        
-        const data = await getDocs(q);
+        const data = await firestore().collection("Tournaments/"+TName+"/Matches").orderBy('MatchNo','desc').limit(1).get();   
+        // const q = query(tournRef, orderBy("MatchNo","desc"), limit(1));                
+        // const data = await getDocs(q);
        // getLastMatchNum(data.docs.map((doc) => ({...doc.data()})));         
         lastMatchData=data.docs.map((doc) => ({...doc.data()}));
         if (lastMatchData.length!=0) {    
@@ -108,8 +105,9 @@ const Atourn = ({route, navigation}) => {
     useEffect(()=>{
         // Getting Matches list
     const getMatchStats = async () => {
-    const q = query(tournRef, orderBy("MatchNo"));        
-    const data = await getDocs(q);
+    const data = await firestore().collection("Tournaments/"+TName+"/Matches").orderBy('MatchNo','asc').get();       
+    // const q = query(tournRef, orderBy("MatchNo"));        
+    // const data = await getDocs(q);
     setMatches(data.docs.map((doc) => ({...doc.data()})));       
     };
     getMatchStats();
@@ -161,7 +159,14 @@ const Atourn = ({route, navigation}) => {
  
         
      const SumbitMatchRes = async() => {
-         try {
+        
+        
+        
+        
+        
+        
+        
+        try {
         let lsr;
         let today = new Date().toLocaleDateString();
         let datetime = new Date();
@@ -169,20 +174,46 @@ const Atourn = ({route, navigation}) => {
         else {lsr = Pl1_selected}       
         let Profit = calcProfit(Win_selected,lsr,Coeff,isChecked);
         console.log('submitMatches Log', MatchNo, TName,Coeff,Pl1_selected,Pl1_selected,Win_selected,lsr,Profit,isChecked);
-         await setDoc(doc(tournRef,MatchNo+Pl1_selected+Pl2_selected),{
-                 Date: today,
-                 MatchNo: MatchNo,
-                 Tourn: TName,
-                 Coeff: Coeff,
-                 Player1: Pl1_selected,
-                 Player2: Pl2_selected,
-                 Winner: Win_selected,
-                 Loser: lsr,
-                 WinnerProfit: Profit,
-                 LoserLoss: Profit*(-1),
-                 FlawlessVictory: isChecked,
-                 DateTime: datetime
-             });
+        
+        
+        
+            // Add a new document in collection
+        firestore()
+        .collection("Tournaments/"+TName+"/Matches")
+        .doc(MatchNo+Pl1_selected+Pl2_selected)
+        .set({
+            Date: today,
+            MatchNo: MatchNo,
+            Tourn: TName,
+            Coeff: Coeff,
+            Player1: Pl1_selected,
+            Player2: Pl2_selected,
+            Winner: Win_selected,
+            Loser: lsr,
+            WinnerProfit: Profit,
+            LoserLoss: Profit*(-1),
+            FlawlessVictory: isChecked,
+            DateTime: datetime
+        })
+        .then(() => {
+        console.log('Match has been added!');
+        });
+       
+        
+        // await setDoc(doc(tournRef, MatchNo+DateTime),{
+        //          Date: today,
+        //          MatchNo: MatchNo,
+        //          Tourn: TName,
+        //          Coeff: Coeff,
+        //          Player1: Pl1_selected,
+        //          Player2: Pl2_selected,
+        //          Winner: Win_selected,
+        //          Loser: lsr,
+        //          WinnerProfit: Profit,
+        //          LoserLoss: Profit*(-1),
+        //          FlawlessVictory: isChecked,
+        //          DateTime: datetime
+        //      });
          
             } catch (err) {
                 console.error('outer', err.message);

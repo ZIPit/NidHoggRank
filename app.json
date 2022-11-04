@@ -17,6 +17,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "plugins": ["@react-native-google-signin/google-signin"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "niddhoggrankingpointcode.nhoggapp"
